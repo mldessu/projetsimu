@@ -32,7 +32,7 @@ h = 10       # [W/(m^2*K)] ; Coefficient de transfert thermique sur les surfaces
 # Paramètres de l'air qui remplit l'appartement
 ka = 0.024    # La conductivité thermique à l'intérieur de l'appartement
 
-delta = 0.1 * np.array([1, 1/2, 1/4, 1/8], dtype=np.double) # Discrétisation en [m]
+delta = 0.1 * np.array([1, 1/2, 1/4], dtype=np.double) # Discrétisation en [m]
 d_ar = np.zeros(delta.size,dtype=np.double)
 tini_ar = np.zeros(delta.size,dtype=np.double)
 tinv_ar = np.zeros(delta.size,dtype=np.double)
@@ -272,24 +272,52 @@ plt.xlabel('x [m]')
 plt.ylabel('y [m]')
 plt.show()
 
+from scipy.stats import linregress
 
-# # plt.figure(4)
-# # plt.loglog(d_ar[::-1],mem_ar[::-1]/1024.0**3,'-o')
-# # plt.title('Exigences de mémoire')
-# # plt.xlabel('Pas $d_x=d_y$ [m]')
-# # plt.ylabel('Mémoire [Gb]')
+plt.figure(4)
+plt.loglog(d_ar[::-1],mem_ar[::-1]/1024.0**3,'-o', label = "mémoire")
+reg_mem= linregress(np.log(d_ar[::-1]),np.log(mem_ar[::-1]/1024.0**3))
+m_mem= reg_mem.slope
+b_mem= reg_mem.intercept
+plt.loglog(d_ar,(d_ar**m_mem)*np.exp(b_mem), "--",label = "régression pour la mémoire", color= "green")
+plt.text(3E-2,10E-1,f"y={m_mem:.4f}x{b_mem:.4f}", color="green")
+plt.title('Exigences de mémoire')
+plt.xlabel('Pas $d_x=d_y$ [m]')
+plt.ylabel('Mémoire [Gb]')
+plt.legend()
+plt.show()
 
-# # plt.figure(5)
-# # Err_ar=abs(Tm_ar[:-1:]-Tm_ar[1::]);
-# # d_Err_ar=d_ar[1::]; # Definiton d'erreur Err(delta)=|Tm(2*delta)-Tm(delta)|
-# # plt.loglog(d_Err_ar[::-1],Err_ar[::-1],'-o')
-# # plt.title('Erreur de calcul')
-# # plt.xlabel('Pas $d_x=d_y$ [m]')
-# # plt.ylabel('Err [$^o$C]')
+plt.figure(5)
+Err_ar=abs(Tm_ar[:-1:]-Tm_ar[1::])
+d_Err_ar=d_ar[1::] # Definiton d'erreur Err(delta)=|Tm(2*delta)-Tm(delta)|
+plt.loglog(d_Err_ar[::-1],Err_ar[::-1],'-o', label = "erreur")
+reg_err= linregress(np.log(d_Err_ar[::-1]),np.log(Err_ar[::-1]))
+m_err= reg_err.slope
+b_err= reg_err.intercept
+plt.loglog(d_ar,(d_ar**m_err)*np.exp(b_err), "--",label = "régression pour l'erreur", color= "red")
+plt.text(3E-2,2E1,f"y={m_err:.4f}x+{b_err:.4f}", color="red")
+plt.title('Erreur de calcul')
+plt.xlabel('Pas $d_x=d_y$ [m]')
+plt.ylabel('Err [$^o$C]')
+plt.legend()
+plt.show()
 
-# # plt.figure(6)
-# # plt.loglog(d_ar[::-1],tini_ar[::-1],'-bo',d_ar[::-1],tinv_ar[::-1],'-r*')
-# # plt.title('Temps de calcul(initialisation et inversion)')
-# # plt.xlabel('Pas $d_x=d_y$ [m]')
-# # plt.ylabel('t [s]')
-# # plt.legend(['$t_{initialisation}$','$t_{inversion}$'])
+plt.figure(6)
+plt.loglog(d_ar[::-1],tini_ar[::-1],'-bo', label = '$t_{initialisation}$') 
+plt.loglog(d_ar[::-1],tinv_ar[::-1],'-r*', label = '$t_{inversion}$')
+reg_ini= linregress(np.log(d_ar[::-1]),np.log(tini_ar[::-1]))
+reg_inv= linregress(np.log(d_ar[::-1]),np.log(tinv_ar[::-1]))
+m_ini= reg_ini.slope
+b_ini= reg_ini.intercept
+m_inv= reg_inv.slope
+b_inv= reg_inv.intercept
+print(m_inv,b_inv)
+plt.loglog(d_ar,(d_ar**m_ini)*np.exp(b_ini), "--",label = "régression pour l'initialisation'", color= "b")
+plt.text(2E-2,2E-2,f"y={m_ini:.4f}x+{b_ini:.4f}", color="b")
+plt.loglog(d_ar,(d_ar**m_inv)*np.exp(b_inv), "--",label = "régression pour l'inversion'", color= "red")
+plt.text(6E-2,1E1,f"y={m_inv:.4f}x+{b_inv:.4f}", color="red")
+plt.title('Temps de calcul(initialisation et inversion)')
+plt.xlabel('Pas $d_x=d_y$ [m]')
+plt.ylabel('t [s]')
+plt.legend(loc = 'best')
+plt.show()
