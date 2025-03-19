@@ -36,7 +36,7 @@ x = np.linspace(0,L,int(N+1))
 # La source est intégrée dans la partie intérieure du mur
 dL = 0.05 
 q = 2000     # W/m^3;
-S = q*np.exp(-((x-L)/dL)**2) # Pourquoi c'est pas la même formule que dans le procédurier?
+S = q / (1+((x-L)/dL)**2) # Pourquoi c'est pas la même formule que dans le procédurier?
 
 # Matrice pleine
 A = np.diag(-2*np.ones(int(N+1)),0) + np.diag(np.ones(int(N)),-1) + np.diag(np.ones(int(N)),1)
